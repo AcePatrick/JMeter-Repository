@@ -1,6 +1,14 @@
 pipeline {
     agent any
 
+    triggers {
+        // Run every day around 2:00 AM
+        cron('H 2 * * *')
+
+        // Poll GitHub every 5 minutes for code changes
+        pollSCM('H/5 * * * *')
+    }
+
     stages {
 
         stage('Checkout') {
@@ -32,10 +40,11 @@ pipeline {
     }
 
     post {
-
         always {
 
             archiveArtifacts artifacts: 'TestResults.jtl', fingerprint: true
+
+            archiveArtifacts artifacts: 'HTMLReport/**', fingerprint: true
 
             publishHTML(target: [
                 reportDir: 'HTMLReport',
@@ -45,7 +54,6 @@ pipeline {
                 alwaysLinkToLastBuild: true,
                 allowMissing: false
             ])
-
         }
     }
 }
